@@ -7,7 +7,9 @@ import android.os.Build
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.offlinevault.data.downloader.DownloadWorker
+import com.offlinevault.data.extractor.NewPipeDownloader
 import dagger.hilt.android.HiltAndroidApp
+import org.schabi.newpipe.extractor.NewPipe
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -18,6 +20,7 @@ class OfflineVaultApp : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        NewPipe.init(NewPipeDownloader.getInstance())
         createNotificationChannel()
     }
 
