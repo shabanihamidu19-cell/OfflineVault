@@ -17,6 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -24,7 +25,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -131,12 +131,27 @@ fun HomeScreen(
                     enabled = state.selectedStream != null && !state.isDownloading,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(if (state.isDownloading) "Downloading..." else "Download to Private Storage")
+                    Text(if (state.isDownloading) "Downloading..." else "Download Now")
+                }
+
+                OutlinedButton(
+                    onClick = viewModel::downloadInBackground,
+                    enabled = state.selectedStream != null && !state.isDownloading,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Download in Background")
                 }
 
                 if (state.downloadSuccess) {
                     Text(
-                        text = "✅ Downloaded successfully! Video is hidden from Gallery.",
+                        text = "✅ Downloaded! Video is hidden from Gallery. Check Library.",
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                if (state.backgroundQueued) {
+                    Text(
+                        text = "📥 Queued in background. You can leave the app.",
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
