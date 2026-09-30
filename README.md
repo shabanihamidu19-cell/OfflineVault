@@ -10,15 +10,17 @@ Videos **never** appear in Gallery or Files app.
 
 ---
 
-## Features (Phase 1 - MVP)
+## Features (Phase 1 - MVP) ✅
 
 - [x] Project setup with Clean Architecture
-- [ ] Paste YouTube URL
-- [ ] Extract title + available qualities (NewPipe Extractor)
-- [ ] Download selected quality
-- [ ] Save to app private storage (`filesDir`)
-- [ ] Offline playback with Media3 (ExoPlayer)
-- [ ] Basic library of downloaded videos
+- [x] Paste YouTube URL
+- [x] Extract title + available qualities (NewPipe Extractor)
+- [x] Download selected quality (foreground + progress)
+- [x] Background download with WorkManager + notification
+- [x] Save to app private storage (`filesDir/videos/`)
+- [x] Offline playback with Media3 (ExoPlayer)
+- [x] Library screen (list / play / delete)
+- [x] Bottom navigation (Download + Library)
 
 ## Tech Stack
 
@@ -40,35 +42,52 @@ Videos **never** appear in Gallery or Files app.
 com.offlinevault
 ├── di/
 ├── data/
-│   ├── extractor/
-│   ├── downloader/
-│   ├── local/
+│   ├── extractor/     # NewPipe wrapper + HTTP downloader
+│   ├── downloader/    # WorkManager worker + scheduler
+│   ├── local/         # PrivateStorageHelper
 │   └── repository/
 ├── domain/
 │   ├── model/
+│   ├── repository/
 │   └── usecase/
 ├── presentation/
 │   ├── home/
 │   ├── library/
-│   └── player/
-└── util/
+│   ├── player/
+│   ├── navigation/
+│   └── theme/
+└── OfflineVaultApp.kt
 ```
 
-## Better Practices We Follow
+## How it works
+
+1. User pastes YouTube URL
+2. NewPipe Extractor fetches streams
+3. User picks quality
+4. Download runs (UI progress **or** background WorkManager)
+5. File saved under `context.filesDir/videos/` — Gallery cannot see it
+6. Library lists files; Player plays with ExoPlayer
+
+## Better Practices
 
 - Clean Architecture (UI ↔ Domain ↔ Data)
 - Single Responsibility
-- Proper error handling
-- Background downloads with WorkManager
+- Hilt Dependency Injection
+- WorkManager for reliable background work
 - Private storage only
-- Material 3 design
-- Dependency Injection with Hilt
+- Material 3 + Compose
+
+## Build
+
+Open in Android Studio (Ladybug+), sync Gradle, run on device/emulator (API 26+).
+
+You still need default launcher icons (`mipmap`) — Android Studio can generate them.
 
 ## Disclaimer
 
-This project is for learning purposes. Downloading YouTube content without permission may violate copyright laws and YouTube's Terms of Service. Use responsibly.
+Learning project only. Unofficial YouTube extraction may break and may violate ToS / copyright. Use responsibly.
 
 ---
 
 **Owner:** KidCoder Tz  
-**Status:** Active Development (Phase 1)
+**Status:** Phase 1 MVP complete — polish & test next
