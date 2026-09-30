@@ -2,6 +2,7 @@ package com.offlinevault.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.offlinevault.data.downloader.DownloadScheduler
 import com.offlinevault.domain.model.VideoInfo
 import com.offlinevault.domain.model.VideoStream
 import com.offlinevault.domain.usecase.DownloadVideoUseCase
@@ -22,13 +23,15 @@ data class HomeUiState(
     val downloadProgress: Float = 0f,
     val isDownloading: Boolean = false,
     val error: String? = null,
-    val downloadSuccess: Boolean = false
+    val downloadSuccess: Boolean = false,
+    val backgroundQueued: Boolean = false
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val extractVideoUseCase: ExtractVideoUseCase,
-    private val downloadVideoUseCase: DownloadVideoUseCase
+    private val downloadVideoUseCase: DownloadVideoUseCase,
+    private val downloadScheduler: DownloadScheduler
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -42,7 +45,13 @@ class HomeViewModel @Inject constructor(
         val url = _uiState.value.url
         viewModelScope.launch {
             _uiState.update {
-                it.copy(isLoading = true, error = null, videoInfo = null, downloadSuccess = false)
+                it.copy(
+                    isLoading = true,
+                    error = null,
+                    videoInfo = null,
+                    downloadSuccess = false,
+                    backgroundQueued = false
+                )
             }
 
             extractVideoUseCase(url)
@@ -67,6 +76,7 @@ class HomeViewModel @Inject constructor(
         _uiState.update { it.copy(selectedStream = stream) }
     }
 
+    /** Foreground download with live progress in UI */
     fun download() {
         val state = _uiState.value
         val info = state.videoInfo ?: return
@@ -88,6 +98,18 @@ class HomeViewModel @Inject constructor(
                     it.copy(isDownloading = false, error = e.message ?: "Download failed")
                 }
             }
+        }
+    }
+
+    /** Background download via WorkManager (survives app close) */
+    fun downloadInBackground() {
+        val state = _uiState.value
+        val info = state.videoInfo ?: return
+        val stream = state.selectedStream ?: return
+
+        downloadScheduler.enqueue(info.id, info.title, stream)
+        _uiState.update {
+            it.copy(backgroundQueued = true, error = null)
         }
     }
 
